@@ -352,4 +352,39 @@ public class AssetsController {
         else
             return Result.error("-1","当前没有申请未处理~");
     }
+
+    @PostMapping("/transfer")
+    public Result<?> Transfer(@RequestBody Map<String,Object> datas){
+        String id = (String) datas.get("id");
+        Integer dstid = (Integer) datas.get("dstid");
+        String userid = (String) datas.get("userid");
+        Assets assets = assetsMapper.selectOne(Wrappers.<Assets>lambdaQuery().eq(Assets::getId,id));
+        OutInPut outInPut = outInPutMapper.selectOne(Wrappers.<OutInPut>lambdaQuery().eq(OutInPut::getId,id));
+        Place originplace = placeMapper.selectOne(Wrappers.<Place>lambdaQuery().eq(Place::getId,assets.getPlace()));
+        Place distplace = placeMapper.selectOne(Wrappers.<Place>lambdaQuery().eq(Place::getId,dstid));
+        if(distplace.getCount().equals(distplace.getMaxcount())){
+            return Result.error("-1","目的地的库存已经达到最大了喔，没法再调拨啦~");
+        }
+        originplace.setCount(originplace.getCount()-1);
+        distplace.setCount(distplace.getCount()+1);
+        assets.setPlace(distplace.getId());
+        Calendar calendar = new GregorianCalendar();
+        String date = ""+calendar.get(Calendar.YEAR)+"-"+(calendar.get(Calendar.MONTH)+1)+"-"+(calendar.get(Calendar.DAY_OF_MONTH)<=9?"0"+calendar.get(Calendar.DAY_OF_MONTH):calendar.get(Calendar.DAY_OF_MONTH));
+        if(originplace.getId()==0&&dstid!=0){
+            assets.setIsinstore(0);
+            outInPut.setOutdate(date);
+        }else if(originplace.getId()!=0&&dstid==0){
+            assets.setIsinstore(1);
+            outInPut.setIndate(date);
+        }
+        placeMapper.updateById(originplace);
+        placeMapper.updateById(distplace);
+        assetsMapper.updateById(assets);
+        outInPutMapper.updateById(outInPut);
+        String msg_id = ""+ calendar.get(Calendar.YEAR) + (calendar.get(Calendar.MONTH)+1) + (calendar.get(Calendar.DAY_OF_MONTH)<=9?"0"+calendar.get(Calendar.DAY_OF_MONTH):calendar.get(Calendar.DAY_OF_MONTH))+(int)(Math.random()*899 + 100);
+        Message msg = new Message(msg_id,"001001",date,"系统提示： 管理员("+userid+")将资源("+id+")从"+originplace.getName()+"移动到了"+distplace.getName()+"~",0,"0",0);
+        messageMapper.insert(msg);
+        return Result.success();
+    }
+
 }
