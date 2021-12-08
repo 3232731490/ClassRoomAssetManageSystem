@@ -10,7 +10,6 @@ import com.nilu.mapper.*;
 import com.nilu.pojo.ClassData;
 import com.nilu.pojo.StatusData;
 import org.springframework.web.bind.annotation.*;
-
 import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -27,19 +26,14 @@ import java.util.*;
 public class AssetsController {
     @Resource
     AssetsMapper assetsMapper;
-
     @Resource
     OutInPutMapper outInPutMapper;
-
     @Resource
     PlaceMapper placeMapper;
-
     @Resource
     BorrowMapper borrowMapper;
-
     @Resource
     UserMapper userMapper;
-
     @Resource
     MessageMapper messageMapper;
 
@@ -53,7 +47,7 @@ public class AssetsController {
             wrapper.eq(Assets::getStatus,status);
         }
         // 将在仓库中的排除
-        wrapper.ne(Assets::getPlace,0);
+        wrapper.ne(Assets::getIsinstore,1);
         Page<Assets> purchasePage = assetsMapper.selectPage(new Page<>(number,pagesize),wrapper);
         if(purchasePage.getTotal()!=0) return Result.success(purchasePage);
         return Result.error("-1","未查询到任何资产信息");
@@ -74,6 +68,11 @@ public class AssetsController {
         }
         assets.setStatus(0);
         assets.setFixcount(assets.getFixcount()+1);
+        Calendar calendar = new GregorianCalendar();
+        String date = ""+calendar.get(Calendar.YEAR)+"-"+(calendar.get(Calendar.MONTH)+1)+"-"+(calendar.get(Calendar.DAY_OF_MONTH)<=9?"0"+calendar.get(Calendar.DAY_OF_MONTH):calendar.get(Calendar.DAY_OF_MONTH));
+        OutInPut outInPut = outInPutMapper.selectOne(Wrappers.<OutInPut>lambdaQuery().eq(OutInPut::getId,assets.getId()));
+        outInPut.setOutdate(date);
+        outInPutMapper.updateById(outInPut);    // 出库时间重置
         assetsMapper.updateById(assets);
         return Result.success();
     }
@@ -124,7 +123,9 @@ public class AssetsController {
     }
 
     @PostMapping("/updateAssetsStatus")
-    public void updateAssetsStatus(@RequestBody String id ,@RequestBody Integer status){
+    public void updateAssetsStatus(@RequestBody Map<String,Object> datas){
+        String id = (String) datas.get("id");
+        Integer status = (Integer) datas.get("status");
         Assets assets = assetsMapper.selectOne(Wrappers.<Assets>lambdaQuery().eq(Assets::getId,id));
         assets.setStatus(status);
         assetsMapper.updateById(assets);
@@ -330,7 +331,6 @@ public class AssetsController {
         }else if(op.getId()!=0&&dp.getId()==0){
             outInPut.setIndate(date);
             assets.setPlace(dp.getId());
-            assets.setUsetime(assets.getUsetime()+dayDiff(date,outInPut.getOutdate(),"yyyy-MM-dd"));    // 更新资产使用时间
             assets.setIsinstore(1);
         }
         assets.setBorrowed(0);

@@ -78,7 +78,7 @@ public class PurchaseController {
         purchase.setIshandle(1);
         purchaseMapper.updateById(purchase);    // 更新订购单状态
         // 将每一件物品编上号送到库中
-        Assets assets = new Assets("",purchase.getKind(),purchase.getBrand(),0,0,0,purchase.getId(),0,1,0,0);
+        Assets assets = new Assets("",purchase.getKind(),purchase.getBrand(),0,0,purchase.getId(),0,1,0,0,null);
         Calendar calendar = new GregorianCalendar();
         String indate = ""+calendar.get(Calendar.YEAR)+"-"+(calendar.get(Calendar.MONTH)+1)+"-"+(calendar.get(Calendar.DAY_OF_MONTH)<=9?"0"+calendar.get(Calendar.DAY_OF_MONTH):calendar.get(Calendar.DAY_OF_MONTH));
         OutInPut outInPut = new OutInPut("",indate,"");

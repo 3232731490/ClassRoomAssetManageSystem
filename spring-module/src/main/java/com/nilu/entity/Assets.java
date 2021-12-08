@@ -21,11 +21,11 @@ public class Assets {
     private String kind;
     private String brand;
     private Integer Status;
-    private Integer usetime;
     private Integer place;
     private String purchaseid;
     private Integer fixcount;
     private Integer isinstore;
     private Integer borrowed;
     private Integer borrowing;
+    private String assetsimg;
 }

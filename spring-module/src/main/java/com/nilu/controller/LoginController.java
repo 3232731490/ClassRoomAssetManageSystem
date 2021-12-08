@@ -126,7 +126,14 @@ public class LoginController {
 
     @RequestMapping("/alterInfo")
     public void alterInfo(@RequestBody User user){
-        userMapper.updateById(user);
+        User newuser = userMapper.selectOne(Wrappers.<User>lambdaQuery().eq(User::getId,user.getId()));
+        newuser.setUsername(user.getUsername());
+        newuser.setSex(user.getSex());
+        newuser.setPlace(user.getPlace());
+        newuser.setTelephone(user.getTelephone());
+        newuser.setSchool(user.getSchool());
+        newuser.setAddress(user.getAddress());
+        userMapper.updateById(newuser);
     }
 
     @RequestMapping("/getUsername")

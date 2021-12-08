@@ -29,4 +29,6 @@ public class User {
     private String Logintime;
     private Integer permission;
     private Integer Sex;
+    private String avatarurl;
+    private Integer imgid;
 }

@@ -104,7 +104,6 @@ public class UserController {
         user1.setUsername(user.getUsername());
         userMapper.updateById(user);
         accountMapper.updateById(account);
-        
     }
 
     @RequestMapping("/getSexNum")
